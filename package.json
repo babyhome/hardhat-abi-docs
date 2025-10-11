@@ -1,7 +1,7 @@
 {
   "name": "hardhat-abi-docs",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.1.0",
+  "description": "Hardhat plugin to generate OpenAPI Documentation from ABI",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,10 +11,25 @@
     "url": "git+https://github.com/babyhome/hardhat-abi-docs.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "babyhome",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/babyhome/hardhat-abi-docs/issues"
   },
-  "homepage": "https://github.com/babyhome/hardhat-abi-docs#readme"
+  "homepage": "https://github.com/babyhome/hardhat-abi-docs#readme",
+  "type": "module",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "^3.0.3",
+    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.0",
+    "@types/chai": "^4.3.20",
+    "@types/chai-as-promised": "^8.0.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.18.9",
+    "chai": "^5.3.3",
+    "ethers": "^6.15.0",
+    "forge-std": "github:foundry-rs/forge-std#v1.9.4",
+    "hardhat": "^3.0.7",
+    "mocha": "^11.7.4",
+    "typescript": "~5.8.0"
+  }
 }
