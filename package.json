@@ -2,7 +2,7 @@
   "name": "hardhat-abi-docs",
   "version": "0.1.0",
   "description": "Hardhat plugin to generate OpenAPI Documentation from ABI",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "npx hardhat generate-abi-docs --contract Counter",
@@ -17,7 +17,12 @@
     "type": "git",
     "url": "git+https://github.com/babyhome/hardhat-abi-docs.git"
   },
-  "keywords": [],
+  "keywords": [
+    "hardhat",
+    "hardhat-plugin",
+    "abi",
+    "openapi"
+  ],
   "author": "babyhome",
   "license": "MIT",
   "bugs": {
