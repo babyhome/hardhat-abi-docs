@@ -3,14 +3,15 @@ import { OpenAPIV3 } from "openapi-types";
 // Type alias for OpenAPI Schema
 type Schema = OpenAPIV3.SchemaObject;
 
-// Map solidity types
-export function solidityTypeToSchema(solType: string): Schema {
+// Map   
+export function solidityTypeToSchema(solType: string, components?: any[]): Schema {
+  console.log(solType, " ::: ", components);
   // Handle dynamic array: type[]
   if (solType.endsWith('[]')) {
     const itemType = solType.slice(0, -2);
     return {
       type: 'array',
-      items: solidityTypeToSchema(itemType),
+      items: solidityTypeToSchema(itemType, components),
     };
   }
 
@@ -26,10 +27,32 @@ export function solidityTypeToSchema(solType: string): Schema {
     const size = parseInt(fixedArrayMatch[2]);
     return {
       type: 'array',
-      items: solidityTypeToSchema(itemType),
+      items: solidityTypeToSchema(itemType, components),
       minItems: size,
       maxItems: size,
     };
+  }
+
+  // Handle tuple/struct
+  if (solType === 'tuple' || solType.startsWith('struct')) {
+    const schema: Schema = {
+      type: 'object',
+      properties: {},
+      required: [],
+    };
+
+    if (components) {
+      components.forEach((comp) => {
+        if (schema.properties) {
+          schema.properties[comp.name || comp.internalType || 'unnamed'] = solidityTypeToSchema(comp.type, comp.components);
+          if (!comp.optional) {
+            schema.required!.push(comp.name || comp.internalType || 'unnamed');
+          }
+        }
+      });
+    }
+
+    return schema;
   }
 
   // Handle primitive types
