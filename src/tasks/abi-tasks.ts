@@ -1,12 +1,17 @@
-import { writeFileSync } from "fs";
+import { fstat, writeFileSync } from "fs";
 import { Abi } from "hardhat/types/artifacts";
 import { HardhatRuntimeEnvironment } from "hardhat/types/hre";
 import { OpenAPIV3 } from "openapi-types";
 import { solidityTypeToSchema } from "../utils/abi-mapper.js";
+import fs from "fs-extra";
+import chalk from "chalk";
+import path from "path";
+import { generateInteractiveSwaggerUi } from "../utils/swagger-generator.js";
 
 interface MyTaskArguments {
   title: string;
   contract: string;
+  port: number;
 }
 
 export default async function (
@@ -33,14 +38,29 @@ export default async function (
       throw new Error(`No functions found in ABI for ${taskArgs.contract}`);
     }
     
+    const outputDir = "docs";
     const abi: Abi = artifact.abi;
     const openApiSpec = generateOpenApiFromAbi(abi, taskArgs.contract);
 
-    // save spec to JSON
-    writeFileSync(`${taskArgs.contract}-openapi.json`, JSON.stringify(openApiSpec, null, 2));
-    console.log(`OpenAPI spec generated: ${taskArgs.contract}-openapi.json`);
+    console.log(chalk.green("✓ Generated API specification"));
 
+    await fs.ensureDir(outputDir);
+
+    const specPath = path.join(outputDir, `${taskArgs.contract}-openapi.json`);
+    await fs.outputJSON(specPath, openApiSpec, { spaces: 2 });
+    console.log(chalk.green(`✓ Saved specification to ${specPath}`));
+    // save spec to JSON
+    // writeFileSync(`docs/${taskArgs.contract}-openapi.json`, JSON.stringify(openApiSpec, null, 2));
+    // console.log(`OpenAPI spec generated: ${taskArgs.contract}-openapi.json`);
+
+    const re = /^(.+?)\[(\d+)\]$/;
+    const s = "address[2]";
+    const m = re.exec(s);
+    console.log(m);
     
+
+    // Start Swagger UI
+    await generateInteractiveSwaggerUi(artifact.abi, taskArgs.contract, taskArgs.port);
 
   } catch (error: any) {
     console.error('Error generating OpenAPI spec:', error.message);
@@ -49,7 +69,7 @@ export default async function (
 
 
 export function generateOpenApiFromAbi(abi: Abi, contractName: string) {
-  const spec: OpenAPIV3.Document = {
+   const spec: OpenAPIV3.Document = {
     openapi: '3.0.0',
     info: {
       title: `${contractName} Smart Contract API`,
@@ -60,6 +80,9 @@ export function generateOpenApiFromAbi(abi: Abi, contractName: string) {
     components: { schemas: {} }
   };
 
+  for( let i = 0; i < abi.length; i++) {
+    console.log("i:", i, abi[i]);
+  }
   abi.forEach((item: any, index: number) => {
     if (item.type === 'function') {
       const path = `/api/${contractName}/${item.name}`;
@@ -69,8 +92,8 @@ export function generateOpenApiFromAbi(abi: Abi, contractName: string) {
       let requestBody: OpenAPIV3.RequestBodyObject | undefined;
 
       if (method === OpenAPIV3.HttpMethods.GET) {
-        parameters = item.inputs.map((input: any) => ({
-          name: input.name || input.internalType || 'param',
+        parameters = item.inputs.map((input: any, index: number) => ({
+          name: input.name || input.internalType || `param${index}`,
           in: 'query',
           required: true,
           schema: solidityTypeToSchema(input.type, input.components),
@@ -81,13 +104,21 @@ export function generateOpenApiFromAbi(abi: Abi, contractName: string) {
         const bodySchema: OpenAPIV3.SchemaObject = {
           type: 'object',
           properties: {},
-          required: item.inputs.map((input: any) => input.name || input.internalType),
+          required: item.inputs.map((input: any) => input.name || input.internalType || `param${index}`),
         };
-        item.inputs.forEach((input: any) => {
+        item.inputs.forEach((input: any, index: number) => {
           if (bodySchema.properties) {
-            bodySchema.properties[input.name || input.internalType] = solidityTypeToSchema(input.type, input.components);
+            bodySchema.properties[input.name || input.internalType || `param${index}`] = solidityTypeToSchema(input.type, input.components);
           }
         });
+
+        if (item.stateMutability === 'payable') {
+          if (bodySchema.properties) {
+            bodySchema.properties['value'] = { type: 'integer', description: 'ETH amount in wei' };
+            bodySchema.required = bodySchema.required || [];
+            bodySchema.required.push('value');
+          }
+        }
         requestBody = {
           required: true,
           content: { 'application/json': { schema: bodySchema } },

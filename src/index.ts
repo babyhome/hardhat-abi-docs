@@ -23,6 +23,12 @@ const abiDocsPlugin: HardhatPlugin = {
       type: ArgumentType.STRING,
       defaultValue: "Hardhat"
     })
+    .addOption({
+      name: "port",
+      description: "Server Port",
+      type: ArgumentType.INT,
+      defaultValue: 3000
+    })
     .setAction(() => import("./tasks/abi-tasks.js"))
     .build(),
   ]
