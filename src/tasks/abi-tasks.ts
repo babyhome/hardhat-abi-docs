@@ -60,10 +60,11 @@ export default async function (
     
 
     // Start Swagger UI
-    await generateInteractiveSwaggerUi(artifact.abi, taskArgs.contract, taskArgs.port);
+    await generateInteractiveSwaggerUi(artifact.abi, taskArgs.contract, taskArgs.port, hre, "");
 
   } catch (error: any) {
     console.error('Error generating OpenAPI spec:', error.message);
+    process.exit(1);
   }
 } 
 
