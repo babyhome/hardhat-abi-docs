@@ -35,6 +35,7 @@ export default defineConfig(
       // Disable two rules that conflict with the patterns that we use
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-redundant-type-constituents": "off",
+      "@typescript-eslint/no-unused-vars": "error",
       // We disable the following rule as it's a common pattern when using
       // the network provider directly
       "@typescript-eslint/no-unsafe-assignment": "off",
