@@ -24,7 +24,7 @@ const plugin: HardhatPlugin = {
       type: ArgumentType.STRING,
       defaultValue: "Hardhat"
     })
-    .setAction(() => import("./tasks/abi-task.js"))
+    .setAction(() => import("./tasks/abi-tasks.js"))
     .build(),
   ],
 };
